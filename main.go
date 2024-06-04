@@ -50,7 +50,7 @@ func Wordfrequeny(s string) map[string]int {
 	wordcount := make(map[string]int)
 	for i := 0; i < len(s); i++ {
 		if s[i] == ' ' || i == len(s)-1 {
-			if value, key := wordcount[temp]; key == true {
+			if value, key := wordcount[temp]; key {
 				wordcount[temp] = value + 1
 			} else {
 				wordcount[temp] = 1
@@ -64,16 +64,21 @@ func Wordfrequeny(s string) map[string]int {
 }
 
 func Wordcounter(s string) int {
-	for i:=0;i<len(s);i++{
-		
+	spaces := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] == ' ' {
+			spaces++
+		}
 	}
+	totalwords := spaces + 1
+	return totalwords
 }
 
 func main() {
 
 	defer timer("main")()
 
-	filepath := "textfile1.txt"
+	filepath := "textfile.txt"
 
 	file, ferr := os.Open(filepath)
 	if ferr != nil {
@@ -93,7 +98,9 @@ func main() {
 
 	fmt.Println("total spaces :", totalspaces)
 
-	fmt.Println("total words :", totalspaces+1)
+	totalwords := Wordcounter(string(filedata))
+
+	fmt.Println("total words :", totalwords)
 
 	totalvowels := VowelsCounter(string(filedata))
 
