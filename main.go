@@ -51,6 +51,7 @@ func Wordfrequeny(s string) map[string]int {
 	wordcount := make(map[string]int)
 
 	for i := 0; i < len(s); i++ {
+
 		if s[i] == ' ' || i == len(s)-1 {
 			if value, key := wordcount[temp]; key {
 				wordcount[temp] = value + 1
