@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
+	"sync"
 	"time"
 )
 
@@ -14,17 +16,19 @@ func timer(name string) func() {
 	}
 }
 
-func SpaceCounter(s string) int {
+func SpaceCounter(s string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	spaces := 0
 	for i := 0; i < len(s); i++ {
 		if s[i] == ' ' {
 			spaces++
 		}
 	}
-	return spaces
+	fmt.Println("totalspaces:", spaces)
 }
 
-func VowelsCounter(s string) int {
+func VowelsCounter(s string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	vowels := 0
 	for i := 0; i < len(s); i++ {
 		if s[i] == 'a' || s[i] == 'e' || s[i] == 'i' || s[i] == 'o' || s[i] == 'u' {
@@ -32,52 +36,56 @@ func VowelsCounter(s string) int {
 		}
 
 	}
-	return vowels
+	fmt.Println("total vowels:", vowels)
 }
 
-func LineCounter(s string) int {
+func LineCounter(s string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	lines := 0
 	for i := 0; i < len(s); i++ {
 		if s[i] == '.' {
 			lines++
 		}
 	}
-	return lines
+	fmt.Println("total lines :", lines)
 }
 
-func Wordfrequeny(s string) map[string]int {
-	var temp string
+func Wordfrequeny(s string, wg *sync.WaitGroup) {
+	defer wg.Done()
 
 	wordcount := make(map[string]int)
 
-	for i := 0; i < len(s); i++ {
-
-		if s[i] == ' ' || i == len(s)-1 {
-			if value, key := wordcount[temp]; key {
-				wordcount[temp] = value + 1
-			} else {
-				wordcount[temp] = 1
-			}
-			temp = ""
+	split := strings.Split(s, " ")
+	for i := 0; i < len(split); i++ {
+		if value, key := wordcount[split[i]]; key {
+			wordcount[split[i]] = value + 1
 		} else {
-			temp += string(s[i])
+			wordcount[split[i]] = 1
 		}
 	}
-	return wordcount
+
+	fmt.Println("word frequencies:", wordcount)
 }
 
-func Wordcounter(s string) int {
+func Wordcounter(s string, wg *sync.WaitGroup) {
+
+	defer wg.Done()
+
 	spaces := 0
 	for i := 0; i < len(s); i++ {
 		if s[i] == ' ' {
-			spaces++
+			spaces++ 
 		}
 	}
 	totalwords := spaces + 1
-	return totalwords
+
+	fmt.Println("total words:", totalwords)
 }
 
 func main() {
+
+	var wg sync.WaitGroup
+	wg.Add(5)
 
 	defer timer("main")()
 
@@ -97,23 +105,16 @@ func main() {
 		return
 	}
 
-	totalspaces := SpaceCounter(string(filedata))
+	go Wordfrequeny(string(filedata), &wg)
 
-	fmt.Println("total spaces :", totalspaces)
+	go SpaceCounter(string(filedata), &wg)
 
-	totalwords := Wordcounter(string(filedata))
+	go Wordcounter(string(filedata), &wg)
 
-	fmt.Println("total words :", totalwords)
+	go VowelsCounter(string(filedata), &wg)
 
-	totalvowels := VowelsCounter(string(filedata))
+	go LineCounter(string(filedata), &wg)
 
-	fmt.Println("total vowels:", totalvowels)
-
-	wordfrequencies := Wordfrequeny(string(filedata))
-
-	fmt.Println(wordfrequencies)
-
-	totallines := LineCounter(string(filedata))
-
-	fmt.Println("total no of lines in paragraph", totallines)
+	wg.Wait()
+	fmt.Println("main exists")
 }
